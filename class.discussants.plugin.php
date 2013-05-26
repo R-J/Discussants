@@ -15,6 +15,14 @@ $PluginInfo['Discussants'] = array(
 
 class DiscussantsPlugin extends Gdn_Plugin {
 
+/**
+ * Add init info to discussion
+ *
+ * @param  array  $Sender  
+ * @param  array  $Args
+ *
+ * @return void
+ */
   public function DiscussionModel_AfterSaveDiscussion_Handler($Sender, $Args) {
     $UserID = $Args['FormPostValues']['InsertUserID'];
 
@@ -32,6 +40,14 @@ class DiscussantsPlugin extends Gdn_Plugin {
       , $Discussants);
   } // End of DiscussionModel_AfterSaveDiscussion
 
+/**
+ * Add additional info to discussion
+ *
+ * @param  array  $Sender  
+ * @param  array  $Args
+ *
+ * @return void
+ */
   public function CommentModel_AfterSaveComment_Handler($Sender, $Args) {
     $DiscussionID = $Args['FormPostValues']['DiscussionID'];
     $UserID = $Args['FormPostValues']['InsertUserID'];
@@ -56,6 +72,51 @@ class DiscussantsPlugin extends Gdn_Plugin {
 
     DiscussantsModel::SetDiscussants($DiscussionID, $Discussants);
   } // End of CommentModel_AfterSaveComment
+  
+  public function CategoriesController_Render_Before($Sender) {
+    $Sender->AddCssFile($this->GetResource('design/custom.css', FALSE, FALSE));
+  }
+  public function DiscussionsController_Render_Before($Sender) {
+    $Sender->AddCssFile($this->GetResource('design/custom.css', FALSE, FALSE));
+  }
+  public function ProfileController_Render_Before($Sender) {
+    $Sender->AddCssFile($this->GetResource('design/custom.css', FALSE, FALSE));
+  }
+
+  public function CategoriesController_AfterDiscussionTitle_Handler(&$Sender) {
+    $this->InsertDiscussants($Sender);
+  }
+  public function DiscussionsController_AfterDiscussionTitle_Handler($Sender) {
+    $this->InsertDiscussants($Sender);
+  }
+  public function ProfileController_AfterDiscussionTitle_Handler($Sender) {
+    $this->InsertDiscussants($Sender);
+  }
+  
+  protected function InsertDiscussants($Sender) {
+    // insert discussants
+    /* 
+    WHERE In $SENDER IS DISCUSIONID?!
+    
+    
+    foreach ($Sender as $arr1) {
+      foreach ($arr1 as $arr2) {
+        // print_r($arr2);
+        // echo '<hr />';
+      }
+    }
+    echo '<p>Test: "';
+    echo GetValue('DiscussionID', $Sender->EventArguments);
+    echo $Sender->EventArguments['DiscussionID'];
+    // var_dump($Sender);
+    echo '"</p>';
+    // taken from IndexPhoto
+    // $FirstUser = UserBuilder($Sender->EventArguments['Discussion'], 'First');
+    // echo UserPhoto($FirstUser);
+    */
+  }
+
+ 
  
 /**
  * Add a new column to table Discussion and update list of discussion members

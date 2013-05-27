@@ -83,7 +83,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
     $Sender->AddCssFile($this->GetResource('design/custom.css', FALSE, FALSE));
   }
 
-  public function CategoriesController_AfterDiscussionTitle_Handler(&$Sender) {
+  public function CategoriesController_AfterDiscussionTitle_Handler($Sender) {
     $this->InsertDiscussants($Sender);
   }
   public function DiscussionsController_AfterDiscussionTitle_Handler($Sender) {
@@ -94,26 +94,43 @@ class DiscussantsPlugin extends Gdn_Plugin {
   }
   
   protected function InsertDiscussants($Sender) {
-    // insert discussants
-    /* 
-    WHERE In $SENDER IS DISCUSIONID?!
+/* Does not work!
+		$Sender->View = $this->GetView('discussants.php');
+		$Sender->Render();
+*/
+    $Discussants = unserialize(GetValue('Discussants', $Sender->EventArguments['Discussion']));
     
+    $FirstDiscussant = $Discussants[2]; // Discussion Author
+    $LastDiscussant =  $Discussants[3]; // Last Annotator
     
-    foreach ($Sender as $arr1) {
-      foreach ($arr1 as $arr2) {
-        // print_r($arr2);
-        // echo '<hr />';
+    $CssClassFirst = intval($Discussants[1][$FirstDiscussant]/10); 
+    $CssClassLast = intval($Discussants[1][$LastDiscussant]/10);
+
+    unset($Discussants[1][$FirstDiscussant]);
+    unset($Discussants[1][$LastDiscussant]);
+
+    $output = '<div class="DiscussantsContainer"><span class="DiscussantsFirst Discussants'.$CssClassFirst.'">'.$FirstDiscussant.'</span>';
+    $Discussants[1]=array(4 => 34, 10 => 68, 5 => 59, 6 => 100, 11 => 17, 7 => 12, 15 => 90, 33 => 20, 21 => 61, 8 => 4, 12 => 33, 9 => 80);
+    
+    // maximum usercount we show without placeholders is 8 (first + last + rest)
+    if (count($Discussants[1]) <= 6) {
+      // loop through percentages of 
+      foreach ($Discussants[1] as $key => $value) {
+        $CssClass = 'Discussants'.intval($value/10); // Discussants0, Discussants1, ... Discussants9, Discussants10
+        $output .= "<span class=\"{$CssClass}\">{$key}</span>";
       }
+    } else { 
+    // split output, showing first, 5 f rest, placeholder, last
+      $output .= 'steam
+      <span class="placeholder">...</span>';
+      
     }
-    echo '<p>Test: "';
-    echo GetValue('DiscussionID', $Sender->EventArguments);
-    echo $Sender->EventArguments['DiscussionID'];
-    // var_dump($Sender);
-    echo '"</p>';
-    // taken from IndexPhoto
-    // $FirstUser = UserBuilder($Sender->EventArguments['Discussion'], 'First');
-    // echo UserPhoto($FirstUser);
-    */
+    if ($FirstDiscussant != $LastDiscussant) { 
+      $output .= '<span class="DiscussantsLast Discussants'.$CssClassLast.'">'.$LastDiscussant.'</span>';
+    }
+    echo $output.'</div>';
+
+  // maybe overlay first with a small alpha top left and last with a small omega top right?
   }
 
  

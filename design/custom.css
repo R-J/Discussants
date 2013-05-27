@@ -1,2 +1,30 @@
-/* Plugin Discussants */
+﻿/* Plugin Discussants */
 body {background: #ddd;}
+.DiscussantsContainer {
+	border: 1px solid black;
+}
+
+.DiscussantsContainer span {
+/*	border: 1px solid black; */
+	margin: 1px;
+}
+
+.DiscussantsFirst {
+	background: lime;
+}
+.DiscussantsLast {
+	background: maroon;
+}
+
+.Discussants0 {  border-bottom: 1px orange solid; }
+.Discussants1 {  border-bottom: 2px orange solid; }
+.Discussants2 {  border-bottom: 3px orange solid; }
+.Discussants3 {  border-bottom: 4px orange solid; }
+.Discussants4 {  border-bottom: 5px orange solid; }
+.Discussants5 {  border-bottom: 6px orange solid; }
+.Discussants6 {  border-bottom: 7px orange solid; }
+.Discussants7 {  border-bottom: 8px orange solid; }
+.Discussants8 {  border-bottom: 9px orange solid; }
+.Discussants9 {  border-bottom: 10px orange solid; }
+.Discussants10 {  border-bottom: 11px orange solid; }
+

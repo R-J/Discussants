@@ -98,39 +98,53 @@ class DiscussantsPlugin extends Gdn_Plugin {
 		$Sender->View = $this->GetView('discussants.php');
 		$Sender->Render();
 */
+    // get Discussants of current Discussion
     $Discussants = unserialize(GetValue('Discussants', $Sender->EventArguments['Discussion']));
     
+    // Set First and Last Discussant
     $FirstDiscussant = $Discussants[2]; // Discussion Author
     $LastDiscussant =  $Discussants[3]; // Last Annotator
     
-    $CssClassFirst = intval($Discussants[1][$FirstDiscussant]/10); 
-    $CssClassLast = intval($Discussants[1][$LastDiscussant]/10);
+    // As well as their css classes
+    $CssClassFirst = 'DiscussantsFirst Discussants'.intval($Discussants[1][$FirstDiscussant]/10); 
+    $CssClassLast = 'DiscussantsLast Discussants'.intval($Discussants[1][$LastDiscussant]/10);
 
+    // get all user in discussion
+    $UserModel = new UserModel();
+    $Users = $UserModel->GetIDs(array_keys($Discussants[1]));
+
+    // First Discussant
+    $output_pre = '<div class="DiscussantsContainer">';
+    $CssClass = $CssClassFirst;
+    if ($FirstDiscussant == $LastDiscussant) { 
+      $CssClass .= ' DiscussantsLast ';
+    }
+    $output_pre .= UserPhoto($Users[$FirstDiscussant], $CssClass);
+
+    // Last Discussant (only if there is more than 1 discussant in discussion)
+    if (count($Discussants[1]) > 1) {
+      $output_post = UserPhoto($Users[$LastDiscussant], $CssClassLast);
+    }
+    $output_post .= '</div>';
+
+    // delete first and last for easy handling
     unset($Discussants[1][$FirstDiscussant]);
     unset($Discussants[1][$LastDiscussant]);
 
-    $output = '<div class="DiscussantsContainer"><span class="DiscussantsFirst Discussants'.$CssClassFirst.'">'.$FirstDiscussant.'</span>';
-    $Discussants[1]=array(4 => 34, 10 => 68, 5 => 59, 6 => 100, 11 => 17, 7 => 12, 15 => 90, 33 => 20, 21 => 61, 8 => 4, 12 => 33, 9 => 80);
-    
-    // maximum usercount we show without placeholders is 8 (first + last + rest)
-    if (count($Discussants[1]) <= 6) {
-      // loop through percentages of 
-      foreach ($Discussants[1] as $key => $value) {
-        $CssClass = 'Discussants'.intval($value/10); // Discussants0, Discussants1, ... Discussants9, Discussants10
-        $output .= "<span class=\"{$CssClass}\">{$key}</span>";
+    // loop through all discussants until max to show is reached
+    $DiscussantsCounter = 0;
+    foreach ($Discussants[1] as $key => $value) {
+      $CssClass = 'Discussants'.intval($value/10); // Discussants0, Discussants1, ... Discussants9, Discussants10
+      $output .= UserPhoto($Users[$key], $CssClass);
+      $DiscussantsCounter += 1;
+      if ($DiscussantsCounter == 7 && (count($Discussants[1]) > 9)) {
+        $output .= '<span class="DiscussantsHidden">'.Img('plugins/Discussants/design/placeholder.png', array('class' => 'DiscussantsPlaceholder'));
+        $output_add = '</span>';
       }
-    } else { 
-    // split output, showing first, 5 f rest, placeholder, last
-      $output .= 'steam
-      <span class="placeholder">...</span>';
-      
     }
-    if ($FirstDiscussant != $LastDiscussant) { 
-      $output .= '<span class="DiscussantsLast Discussants'.$CssClassLast.'">'.$LastDiscussant.'</span>';
-    }
-    echo $output.'</div>';
-
-  // maybe overlay first with a small alpha top left and last with a small omega top right?
+    
+    echo $output_pre.$output.$output_add.$output_post;
+    
   }
 
  

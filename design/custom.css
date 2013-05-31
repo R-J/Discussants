@@ -63,10 +63,11 @@
 .DiscussantsPlaceholder {
 	height: 30px;
 	width:  30px;
-	margin: 0px 4px 0px 3px;
+	margin-left: 3px;
+	margin-right: 4px;
 }
 
 .DiscussantsHidden {
-	width: 30px;
-	overflow: hidden;
+	width: 50px;
+	display: inline;
 }

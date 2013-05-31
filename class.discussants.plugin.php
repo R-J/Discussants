@@ -24,9 +24,10 @@ class DiscussantsPlugin extends Gdn_Plugin {
  * @return void
  */
   public function DiscussionModel_AfterSaveDiscussion_Handler($Sender, $Args) {
+    // $this->DiscussantsUpdate($Args['DiscussionID']);
     $UserID = $Args['FormPostValues']['InsertUserID'];
 
-    // arr(user->postingcount),arr(user->percentage), author, last annotator
+    // arr(user->postingcount),arr(user->percentage), author, last annotator)
     $Discussants = array(
       array($UserID => 1)
       , array($UserID => 100)
@@ -49,9 +50,9 @@ class DiscussantsPlugin extends Gdn_Plugin {
  * @return void
  */
   public function CommentModel_AfterSaveComment_Handler($Sender, $Args) {
+    // $this->DiscussantsUpdate($Args['FormPostValues']['DiscussionID']);
     $DiscussionID = $Args['FormPostValues']['DiscussionID'];
     $UserID = $Args['FormPostValues']['InsertUserID'];
-
     $Discussants = DiscussantsModel::GetDiscussants($DiscussionID);
 
     // increase posting count for user
@@ -71,8 +72,51 @@ class DiscussantsPlugin extends Gdn_Plugin {
     $Discussants[3] = $UserID;
 
     DiscussantsModel::SetDiscussants($DiscussionID, $Discussants);
+
   } // End of CommentModel_AfterSaveComment
   
+/** 
+ * Reduces count in extra info
+ *
+ * @param  array  $Sender  
+ *
+ * @return void
+ */
+  public function CommentModel_DeleteComment_Handler($Sender) {
+    $CommentID = $Sender->EventArguments['CommentID'];
+    $CommentModel = new CommentModel();
+    $Comment = $CommentModel->GetID($CommentID);
+    $DiscussionID = GetValue('DiscussionID', $Comment);
+    $Discussants = DiscussantsModel::GetDiscussants($DiscussionID);
+    $UserID = GetValue('InsertUserID', $Comment);
+
+    // decrease postingcount or delete user if that was his last comment
+    if ($Discussants[0][$UserID] == 1) {
+        unset($Discussants[0][$UserID]);
+        unset($Discussants[1][$UserID]);
+    } else {
+        $Discussants[0][$UserID] = $Discussants[0][$UserID] - 1;
+    }
+    
+    // recalculate percentage on base of current max posting count
+    $MaxPostingCount = max($Discussants[0]);
+    foreach ($Discussants[1] as $user => $value) {
+      $Discussants[1][$user] = intval(ceil($Discussants[0][$user] / $MaxPostingCount * 100));
+    }
+    
+    // update last annotator if necessary
+    if ($Discussants[3] == $UserID) {
+        $DiscussionModel = new DiscussionModel();
+        $Discussion = $DiscussionModel->GetID($DiscussionID);
+        $Discussants[3] = GetValue('LastCommentUserID', $Discussion);
+        // $Discussants=array($Discussants[3], $UserID)
+    }
+    DiscussantsModel::SetDiscussants($DiscussionID, $Discussants);
+    
+    // $this->DiscussantsUpdate($DiscussionID, $CommentID);
+  }
+  
+   // Add CSS file
   public function CategoriesController_Render_Before($Sender) {
     $Sender->AddCssFile($this->GetResource('design/custom.css', FALSE, FALSE));
   }
@@ -83,17 +127,18 @@ class DiscussantsPlugin extends Gdn_Plugin {
     $Sender->AddCssFile($this->GetResource('design/custom.css', FALSE, FALSE));
   }
 
+  // Add View
   public function CategoriesController_AfterDiscussionTitle_Handler($Sender) {
-    $this->InsertDiscussants($Sender);
+    $this->DiscussantsView($Sender);
   }
   public function DiscussionsController_AfterDiscussionTitle_Handler($Sender) {
-    $this->InsertDiscussants($Sender);
+    $this->DiscussantsView($Sender);
   }
   public function ProfileController_AfterDiscussionTitle_Handler($Sender) {
-    $this->InsertDiscussants($Sender);
+    $this->DiscussantsView($Sender);
   }
   
-  protected function InsertDiscussants($Sender) {
+  protected function DiscussantsView($Sender) {
 /* Does not work!
 		$Sender->View = $this->GetView('discussants.php');
 		$Sender->Render();
@@ -139,6 +184,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
       $DiscussantsCounter += 1;
       if ($DiscussantsCounter == 7 && (count($Discussants[1]) > 9)) {
         $output .= '<span class="DiscussantsHidden">'.Img('plugins/Discussants/design/placeholder.png', array('class' => 'DiscussantsPlaceholder'));
+        // $this->GetResource('design/custom.css', FALSE, FALSE)
         $output_add = '</span>';
       }
     }
@@ -147,7 +193,49 @@ class DiscussantsPlugin extends Gdn_Plugin {
     
   }
 
- 
+/**
+ * Updates Discussants info in discussion
+ * 
+ * @param type $DiscussionID
+ */ 
+  protected function DiscussantsUpdate($DiscussionID = '', $DeleteCommentID =''){
+    $DiscussionModel = new DiscussionModel();
+    $CommentModel = new CommentModel();
+    if ($DiscussionID = '') {
+        // Update Discussants of _all_ discussions if no param is given
+        $Discussions = $DiscussionModel->Get()->ResultArray();
+    } else {
+        $Discussions = $DiscussionModel->GetID($DiscussionID)->ResultArray();
+    }
+    foreach ($Discussions as $Discussion) {
+        $DiscussionID = $Discussion['DiscussionID'];
+        $UserID = $Discussion['InsertUserID'];
+        // init values
+        $Discussants = array(
+            array($UserID => 1)
+            , array($UserID => 100)
+            , $Discussion['InsertUserID']
+            , $Discussion['InsertUserID']
+        );
+        $Comments = $CommentModel->Get($DiscussionID, 999999999999999)->ResultArray();
+        foreach ($Comments as $Comment) {
+            // if current comment the one that will be deleted, go to next
+            if ($Comment['CommentID'] == $DeleteCommentID) {
+                continue;
+            } 
+            $UserID = $Comment['InsertUserID'];
+            $Discussants[0][$UserID] = $Discussants[0][$UserID] + 1;
+            $Discussants[1][$UserID] = 100; // init percentage array
+        }
+        $Discussants[3] = $UserID;
+        // calculate percentage on base of current max posting count
+        $MaxPostingCount = max($Discussants[0]);
+        foreach ($Discussants[1] as $user => $value) {
+            $Discussants[1][$use<r] = intval(ceil($Discussants[0][$user] / $MaxPostingCount * 100));
+        }
+        DiscussantsModel::SetDiscussants($Discussion['DiscussionID'], $Discussants);
+    }
+ }
  
 /**
  * Add a new column to table Discussion and update list of discussion members
@@ -166,6 +254,6 @@ class DiscussantsPlugin extends Gdn_Plugin {
    
   public function Setup() {
     $this->Structure();
-    // TODO: fill new column for existing discussions
+    $this->DiscussantsUpdate();
   } // End of Setup
 }

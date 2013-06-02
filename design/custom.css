@@ -6,6 +6,7 @@
 .DiscussantsContainer img {
 	/* height: 20px;
 	width: 20px; */
+        vertical-align: middle;
 }
 .DiscussantsFirst {
 	margin-right: 4px;

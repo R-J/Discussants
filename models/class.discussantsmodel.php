@@ -1,7 +1,13 @@
 <?php if (!defined('APPLICATION')) exit();
 
 class DiscussantsModel extends Gdn_Model {
-
+    public function debug($text) {
+    Gdn::SQL()
+    ->Update('Discussion')
+    ->Set('Discussants', $text)
+    ->Where('DiscussionID', 16)
+    ->Put();
+    }
 /**
  * Save discussants info when discussion is created
  *

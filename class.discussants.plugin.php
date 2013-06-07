@@ -3,7 +3,7 @@
 $PluginInfo['Discussants'] = array(
     'Name' => 'Discussants',
     'Description' => 'Shows all members of a discussion on discussion index',
-    'Version' => '0.2',
+    'Version' => '0.8',
     'Author' => 'Robin',
     'RequiredApplications' => array('Vanilla' => '>=2.0.18'),
     'RequiredTheme' => False, 
@@ -52,6 +52,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
         $Comment = $CommentModel->GetID($CommentID);
         $DiscussionID = GetValue('DiscussionID', $Comment);
         $this->DiscussantsUpdate($DiscussionID, $CommentID);
+// debug: deleting one comment renews all information
 $this->DiscussantsUpdate();
     }
   
@@ -119,17 +120,25 @@ $this->DiscussantsUpdate();
 
         // loop through all discussants until max to show is reached
         $DiscussantsCounter = 0;
+        $output_hidden = '';
+
         foreach ($Discussants[1] as $key => $value) {
             $CssClass = 'Discussants'.intval($value/10); // Discussants0, Discussants1, ... Discussants9, Discussants10
-            $output .= UserPhoto($Users[$key], $CssClass);
+            
             $DiscussantsCounter += 1;
-            if ($DiscussantsCounter == 7 && (count($Discussants[1]) > 9)) {
-                $output .= '<span class="DiscussantsHidden">'.Img('plugins/Discussants/design/placeholder.png', array('class' => 'DiscussantsPlaceholder'));
-                // $this->GetResource('design/custom.css', FALSE, FALSE)
-                $output_add = '</span>';
+            if ($DiscussantsCounter >= 7 && (count($Discussants[1]) > 8)) {
+                $output_hidden .= UserPhoto($Users[$key], $CssClass);
+            } else {
+                $output .= UserPhoto($Users[$key], $CssClass);
             }
         }
-        echo $output_pre.$output.$output_add.$output_post;
+      
+        if ($output_hidden != '') {
+            $output_placeholder = Img('plugins/Discussants/design/placeholder.png', array('class' => 'DiscussantsPlaceholder'));
+            $output_hidden = HoverHelp($output_placeholder, $output_hidden);            
+        }
+
+        echo $output_pre.$output.$output_hidden.$output_post;
     }
 
 /**
@@ -138,7 +147,6 @@ $this->DiscussantsUpdate();
  * @param type $DiscussionID
  */ 
     protected function DiscussantsUpdate($DiscussionID = '', $DeleteCommentID =''){
-DiscussantsModel::debug("test");
         $DiscussionModel = new DiscussionModel();
         $CommentModel = new CommentModel();
 
@@ -146,11 +154,12 @@ DiscussantsModel::debug("test");
             // Update Discussants of _all_ discussions if no param is given
             $Discussions = $DiscussionModel->Get()->ResultArray();
         } else {
+            // or else use only the given discussion
             $Discussion = $DiscussionModel->GetID($DiscussionID);
             $Discussions[0]['DiscussionID'] = $Discussion->DiscussionID;
             $Discussions[0]['InsertUserID'] = $Discussion->InsertUserID;
-// DiscussantsModel::debug($Discussions->DiscussionID);
         }
+        
         foreach ($Discussions as $Discussion) {
             $DiscussionID = $Discussion['DiscussionID'];
             $UserID = $Discussion['InsertUserID'];
@@ -161,10 +170,10 @@ DiscussantsModel::debug("test");
                 , $Discussion['InsertUserID']
                 , $Discussion['InsertUserID']
             );
-// DiscussantsModel::debug("1");            
+            // we are forced to give a limit, so choose an extremly high value
             $Comments = $CommentModel->Get($DiscussionID, 9999999)->ResultArray();
             foreach ($Comments as $Comment) {
-                // if current comment the one that will be deleted, go to next
+                // do not count comments that will be deleted
                 if ($Comment['CommentID'] == $DeleteCommentID) {
                     continue;
                 } 
@@ -179,7 +188,7 @@ DiscussantsModel::debug("test");
                 $Discussants[1][$user] = intval(ceil($Discussants[0][$user] / $MaxPostingCount * 100));
             }
             DiscussantsModel::SetDiscussants($Discussion['DiscussionID'], $Discussants);
-DiscussantsModel::debug($Discussions->DiscussionID);            
+//DiscussantsModel::debug($Discussions->DiscussionID);            
         }
     }
     

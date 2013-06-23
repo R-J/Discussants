@@ -11,8 +11,6 @@ $PluginInfo['Discussants'] = array(
     'License' => 'GPL'
 );
 
-// TODO: handle for deletion of comments
-
 class DiscussantsPlugin extends Gdn_Plugin {
 
 /**

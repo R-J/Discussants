@@ -3,7 +3,7 @@
 $PluginInfo['Discussants'] = array(
     'Name' => 'Discussants',
     'Description' => 'Shows all members of a discussion on discussion index',
-    'Version' => '0.8',
+    'Version' => '0.9',
     'Author' => 'Robin',
     'RequiredApplications' => array('Vanilla' => '>=2.0.18'),
     'RequiredTheme' => False, 
@@ -50,8 +50,6 @@ class DiscussantsPlugin extends Gdn_Plugin {
         $Comment = $CommentModel->GetID($CommentID);
         $DiscussionID = GetValue('DiscussionID', $Comment);
         $this->DiscussantsUpdate($DiscussionID, $CommentID);
-// debug: deleting one comment renews all information
-$this->DiscussantsUpdate();
     }
   
     // Add CSS file
@@ -76,11 +74,8 @@ $this->DiscussantsUpdate();
         $this->DiscussantsView($Sender);
     }
   
-    protected function DiscussantsView($Sender) {
-/* Does not work!
-		$Sender->View = $this->GetView('discussants.php');
-		$Sender->Render();
-*/
+    private function DiscussantsView($Sender) {
+
         // get Discussants of current Discussion
         $Discussants = unserialize(GetValue('Discussants', $Sender->EventArguments['Discussion']));
         if ($Discussants==false) {
@@ -132,19 +127,19 @@ $this->DiscussantsUpdate();
         }
       
         if ($output_hidden != '') {
-            $output_placeholder = Img('plugins/Discussants/design/placeholder.png', array('class' => 'DiscussantsPlaceholder'));
+            $output_placeholder = Img('plugins/Discussants/design/placeholder2.png', array('class' => 'DiscussantsPlaceholder'));
             $output_hidden = HoverHelp($output_placeholder, $output_hidden);            
         }
 
         echo $output_pre.$output.$output_hidden.$output_post;
-    }
+    } // End of DiscussantsView
 
 /**
  * Updates Discussants info in discussion
  * 
  * @param type $DiscussionID
  */ 
-    protected function DiscussantsUpdate($DiscussionID = '', $DeleteCommentID =''){
+    private function DiscussantsUpdate($DiscussionID = '', $DeleteCommentID =''){
         $DiscussionModel = new DiscussionModel();
         $CommentModel = new CommentModel();
 
@@ -186,8 +181,7 @@ $this->DiscussantsUpdate();
                 $Discussants[1][$user] = intval(ceil($Discussants[0][$user] / $MaxPostingCount * 100));
             }
             DiscussantsModel::SetDiscussants($Discussion['DiscussionID'], $Discussants);
-//DiscussantsModel::debug($Discussions->DiscussionID);            
-        }
+        } // End of DiscussantsUpdate
     }
     
 
@@ -208,8 +202,8 @@ $this->DiscussantsUpdate();
    
     public function Setup() {
         $this->Structure();
-        // $this->DiscussantsUpdate();
-        
+        require_once('models/class.discussantsmodel.php');
+        $this->DiscussantsUpdate();
     } // End of Setup
 
     public function OnDisable() {
@@ -218,5 +212,5 @@ $this->DiscussantsUpdate();
         $Structure = $Database->Structure();
         $Px = $Database->DatabasePrefix;
         $Structure->Query("ALTER TABLE {$Px}Discussion drop column Discussants");
-   }
+   } // End of OnDisable
 }

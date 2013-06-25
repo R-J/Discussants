@@ -72,3 +72,7 @@
 	width: 50px;
 	display: inline;
 }
+
+.DiscussantsContainer .HoverHelp .Help {
+  display: none;
+}

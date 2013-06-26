@@ -167,10 +167,13 @@ class DiscussantsPlugin extends Gdn_Plugin {
         }
         // get number of discussants
         $DisCount = count($Discussants[1]);
-        $output = '<span class="DiscussantCount">'.$DisCount.' discussant';
+        $output = '<span class="DiscussantCount">'.$DisCount.' ';
         if ($DisCount > 1) {
             // use plural if more than one discussant
-            $output  .= 's';
+            $output  .= T('discussants');
+        } else {
+            // or singular for one discussant
+            $output  .= T('discussant');
         }
         $output .= '</span>';
         echo $output;

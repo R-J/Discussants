@@ -3,7 +3,8 @@
 $PluginInfo['Discussants'] = array(
     'Name' => 'Discussants',
     'Description' => 'Shows the avatars of all discussants in discussion indexes and also the count of discussants',
-    'Version' => '0.9.2',
+    'Version' => '0.9.21',
+    'HasLocale' => TRUE,
     'Author' => 'Robin',
     'RequiredApplications' => array('Vanilla' => '>=2.0.18'),
     'RequiredTheme' => False, 
@@ -167,15 +168,12 @@ class DiscussantsPlugin extends Gdn_Plugin {
         }
         // get number of discussants
         $DisCount = count($Discussants[1]);
-        $output = '<span class="DiscussantCount">'.$DisCount.' ';
-        if ($DisCount > 1) {
-            // use plural if more than one discussant
-            $output  .= T('discussants');
-        } else {
-            // or singular for one discussant
-            $output  .= T('discussant');
-        }
-        $output .= '</span>';
+        $output = Wrap(
+          Plural($DisCount, '1 discussant', '%s discussants'),
+            'span',
+            array('class' => 'DiscussantCount')
+        );
+        
         echo $output;
     } // End of DiscussantsCountView
     

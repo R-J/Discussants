@@ -2,8 +2,8 @@
 
 $PluginInfo['Discussants'] = array(
     'Name' => 'Discussants',
-    'Description' => 'Shows all members of a discussion on discussion index',
-    'Version' => '0.9',
+    'Description' => 'Shows the avatars of all discussants in discussion indexes and also the count of discussants',
+    'Version' => '0.9.2',
     'Author' => 'Robin',
     'RequiredApplications' => array('Vanilla' => '>=2.0.18'),
     'RequiredTheme' => False, 
@@ -63,7 +63,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
         $Sender->AddCssFile($this->GetResource('design/custom.css', FALSE, FALSE));
     }
 
-    // Add View
+    // Add view for avatars
     public function CategoriesController_AfterDiscussionTitle_Handler($Sender) {
         $this->DiscussantsView($Sender);
     }
@@ -73,7 +73,25 @@ class DiscussantsPlugin extends Gdn_Plugin {
     public function ProfileController_AfterDiscussionTitle_Handler($Sender) {
         $this->DiscussantsView($Sender);
     }
-  
+
+    // Add view for text: X discussant(s)
+    public function CategoriesController_AfterCountMeta_Handler($Sender) {
+      $this->DiscussantsCountView($Sender);
+    }
+    public function DiscussionsController_AfterCountMeta_Handler($Sender) {
+      $this->DiscussantsCountView($Sender);
+    }
+    public function ProfileController_AfterCountMeta_Handler($Sender) {
+      $this->DiscussantsCountView($Sender);
+    }    
+
+/**
+ * Shows avatars of all members in the discussion
+ * 
+ * @param array $Sender
+ *
+ * @return void
+ */
     private function DiscussantsView($Sender) {
 
         // get Discussants of current Discussion
@@ -133,7 +151,31 @@ class DiscussantsPlugin extends Gdn_Plugin {
 
         echo $output_pre.$output.$output_hidden.$output_post;
     } // End of DiscussantsView
-
+    
+/**
+ * Shows number of discussants in discussion
+ * 
+ * @param array $Sender
+ *
+ * @return void
+ */
+    private function DiscussantsCountView($Sender) {
+         // get Discussants of current Discussion and exit if something went wrog
+        $Discussants = unserialize(GetValue('Discussants', $Sender->EventArguments['Discussion']));
+        if ($Discussants==false) {
+            return;
+        }
+        // get number of discussants
+        $DisCount = count($Discussants[1]);
+        $output = '<span class="DiscussantCount">'.$DisCount.' discussant';
+        if ($DisCount > 1) {
+            // use plural if more than one discussant
+            $output  .= 's';
+        }
+        $output .= '</span>';
+        echo $output;
+    } // End of DiscussantsCountView
+    
 /**
  * Updates Discussants info in discussion
  * 
@@ -183,7 +225,6 @@ class DiscussantsPlugin extends Gdn_Plugin {
             DiscussantsModel::SetDiscussants($Discussion['DiscussionID'], $Discussants);
         } // End of DiscussantsUpdate
     }
-    
 
 /**
  * Add a new column to table Discussion and update list of discussion members

@@ -3,12 +3,13 @@
 $PluginInfo['Discussants'] = array(
     'Name' => 'Discussants',
     'Description' => 'Shows the avatars of all discussants in discussion indexes and also the count of discussants',
-    'Version' => '0.9.21',
+    'Version' => '0.9.22',
     'HasLocale' => TRUE,
     'Author' => 'Robin',
     'RequiredApplications' => array('Vanilla' => '>=2.0.18'),
-    'RequiredTheme' => False, 
-    'RequiredPlugins' => False,
+    'RequiredTheme' => FALSE, 
+    'RequiredPlugins' => FALSE,
+    'MobileFriendly' => TRUE,
     'License' => 'GPL'
 );
 
@@ -93,7 +94,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
  *
  * @return void
  */
-    private function DiscussantsView($Sender) {
+    public function DiscussantsView($Sender) {
 
         // get Discussants of current Discussion
         $Discussants = unserialize(GetValue('Discussants', $Sender->EventArguments['Discussion']));
@@ -160,7 +161,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
  *
  * @return void
  */
-    private function DiscussantsCountView($Sender) {
+    public function DiscussantsCountView($Sender) {
          // get Discussants of current Discussion and exit if something went wrog
         $Discussants = unserialize(GetValue('Discussants', $Sender->EventArguments['Discussion']));
         if ($Discussants==false) {
@@ -182,7 +183,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
  * 
  * @param type $DiscussionID
  */ 
-    private function DiscussantsUpdate($DiscussionID = '', $DeleteCommentID =''){
+    public function DiscussantsUpdate($DiscussionID = '', $DeleteCommentID =''){
         $DiscussionModel = new DiscussionModel();
         $CommentModel = new CommentModel();
 
@@ -233,7 +234,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
  *
  * @return void
  */ 
-    private function Structure() {
+    public function Structure() {
         // Discussants = serialized arr(arr(user->postingcount)
         // , arr(user->percentage), author, last annotator)
         Gdn::Structure()

@@ -254,6 +254,6 @@ class DiscussantsPlugin extends Gdn_Plugin {
         $Database = Gdn::Database();
         $Structure = $Database->Structure();
         $Px = $Database->DatabasePrefix;
-        $Structure->Query("ALTER TABLE {$Px}Discussion drop column Discussants");
+        $Structure->Table('Discussion')->DropColumn('Discussants');
    } // End of OnDisable
 }

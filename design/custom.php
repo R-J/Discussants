@@ -1,5 +1,12 @@
+<?php
+  header("Content-type: text/css; charset: UTF-8");
+  $imgSize = 25;
+  $hiddenimgSize = $imgSize -2;
+  $borderRadius = ceil($imgSize/5);
+  $margin = ceil($imgSize/10)*5;
+?>
 @keyframes discussants {
-  from {margin-right:-15px;}
+  from {margin-right:-<?= $margin ?>px;}
   to {margin-right:1px;}
 }
 
@@ -10,11 +17,11 @@
 
 
 .DiscussantsContainer img {
-  width:25px;
-  height:25px;
-  -webkit-border-radius:5px;
-  -moz-border-radius:5px;
-  border-radius:5px;
+  width:<?= $imgSize ?>px;
+  height:<?= $imgSize ?>px;
+  -webkit-border-radius:<?= $borderRadius ?>px;
+  -moz-border-radius:<?= $borderRadius ?>px;
+  border-radius:<?= $borderRadius ?>px;
 }
 
 .HiddenDiscussantsContainer {
@@ -23,11 +30,11 @@
 
 .DiscussantsContainer li {
   display:inline;
-  margin-right:-15px;
+  margin-right:-<?= $margin ?>px;
 }
 
 .HiddenDiscussantsContainer li {
-  margin-right:-23px;
+  margin-right:-<?= $hiddenimgSize ?>px;
 }
 
 .DiscussantsContainer:hover li {

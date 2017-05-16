@@ -3,11 +3,11 @@
 $PluginInfo['Discussants'] = [
     'Name' => 'Discussants',
     'Description' => 'Shows the avatars of all discussants in discussion indexes and also the count of discussants',
-    'Version' => '1.1',
+    'Version' => '1.2',
     'HasLocale' => true,
     'Author' => 'Robin Jurinka',
     'AuthorUrl' => 'http://vanillaforums.org/profile/r_j',
-    'RequiredApplications' => ['Vanilla >=' => '2.3'],
+    'RequiredApplications' => ['Vanilla' => '>=2.3'],
     'RequiredTheme' => false,
     'RequiredPlugins' => false,
     'MobileFriendly' => true,

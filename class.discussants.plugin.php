@@ -1,18 +1,18 @@
-<?php defined('APPLICATION') or die;
+<?php
 
-$PluginInfo['Discussants'] = array(
+$PluginInfo['Discussants'] = [
     'Name' => 'Discussants',
     'Description' => 'Shows the avatars of all discussants in discussion indexes and also the count of discussants',
-    'Version' => '1.0',
+    'Version' => '1.0.1',
     'HasLocale' => true,
     'Author' => 'Robin Jurinka',
     'AuthorUrl' => 'http://vanillaforums.org/profile/r_j',
-    'RequiredApplications' => array('Vanilla' => '>=2.2'),
+    'RequiredApplications' => ['Vanilla' => '>=2.2'],
     'RequiredTheme' => false,
     'RequiredPlugins' => false,
     'MobileFriendly' => true,
     'License' => 'MIT'
-);
+];
 
 /**
  * Vanilla Plugin that shows a list of avatars at the discussion list.
@@ -61,7 +61,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
     /**
      * Return discussants of a discussion.
      *
-     * @param integer $discussionID ID of the disucssion from which the discussants should be returned.
+     * @param integer $discussionID ID of the discussion from which the discussants should be returned.
      * @return mixed array of users in the discussion specified with the discussion ID.
      * @package Discussants
      * @since 1.0
@@ -125,7 +125,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
         $discussionID = (int)$discussionID;
         if ($discussionID > 0) {
             $discussion = $discussionModel->getID($discussionID);
-            $discussions = array();
+            $discussions = [];
             $discussions[0]['DiscussionID'] = $discussion->DiscussionID;
             $discussions[0]['InsertUserID'] = $discussion->InsertUserID;
         } else {
@@ -137,12 +137,12 @@ class DiscussantsPlugin extends Gdn_Plugin {
             $discussionID = $discussion['DiscussionID'];
             $userID = $discussion['InsertUserID'];
             // Init values
-            $discussants = array(
-                array($userID => 1) // InsertUser has one post in this discussion
-                , array($userID => 100) // that makes up 100%
-                , $discussion['InsertUserID'] // he is th first
+            $discussants = [
+                [$userID => 1] // InsertUser has one post in this discussion
+                , [$userID => 100] // that makes up 100%
+                , $discussion['InsertUserID'] // he is the first
                 , $discussion['InsertUserID'] // and the last author
-            );
+            ];
             // We are forced to give a limit, so choose an extremely high value.
             $comments = $commentModel->get($discussionID, 9999999)->resultArray();
 
@@ -225,7 +225,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
      * @since 1.0
      */
     public function userModel_beforeDeleteUser_handler($sender, $args) {
-        $discussionIDs = array();
+        $discussionIDs = [];
         foreach ($args['Content']['Comment'] as $comment) {
             $discussionIDs[] = $comment['DiscussionID'];
         }
@@ -265,7 +265,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
      * @since 1.0
      */
     public function categoriesController_render_before($sender) {
-        $sender->addCssFile($this->getResource('design/custom.css', false, false));
+        $sender->addCssFile('discussants.css', 'plugins/Discussants');
     }
 
     /**
@@ -277,8 +277,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
      * @since 1.0
      */
     public function discussionsController_render_before($sender) {
-        // $sender->addCssFile($this->getResource('design/custom.php', false, false));
-        $sender->addCssFile($this->getResource('design/custom.css', false, false));
+        $sender->addCssFile('discussants.css', 'plugins/Discussants');
     }
 
     /**
@@ -290,7 +289,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
      * @since 1.0
      */
     public function profileController_render_before($sender) {
-        $sender->addCssFile($this->getResource('design/custom.css', false, false));
+        $sender->addCssFile('discussants.css', 'plugins/Discussants');
     }
 
     /**
@@ -408,7 +407,7 @@ class DiscussantsPlugin extends Gdn_Plugin {
                 echo '<li><ul class="HiddenDiscussantsContainer HoverHelp">';
             }
             // Create list entry with avatar and "username [count]" title.
-            echo '<li class="',$cssClass,'">',userPhoto($users[$key], array('Title' => $users[$key]['Name'].' ['.$discussants[0][$key].']')),'</li>';
+            echo '<li class="',$cssClass,'">',userPhoto($users[$key], ['Title' => $users[$key]['Name'].' ['.$discussants[0][$key].']']),'</li>';
           }
 
         // Close sublist if it has been created.
